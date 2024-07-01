@@ -6,9 +6,6 @@ from constants import *
 
 #--------------------------------
 # TO DO:
-# - elfektetni az I tetrominokat spawnolásnál
-# - draw_next_tetrominoes() függvényt megcsinálani
-# - a next blockot inkscape-ben megcsinálni (tetrio-ról lemérni)
 #--------------------------------
 
 pygame.font.init()
@@ -43,10 +40,33 @@ def draw_tetromino(tetromino, placed_tetrominos, placed_tetromino_colors):
 
 def draw_next_tetrominoes(next_tetrominoes):
     for i, tetromino in enumerate(next_tetrominoes):
-        for block in tetromino.blocks:
-            x = next_tetrominoes_x0 + block[0] * block_dim
+
+        x_offset = next_tetrominoes_x0 - ((tetromino.max_x - tetromino.min_x + 1)*block_dim) / 2
+
+        block_x_min = min(block[0] for block in tetromino.blocks)
+
+        tetromino_blocks = add_lists([[ - block_x_min, 0]], tetromino.blocks)
+
+        for block in tetromino_blocks:
+            x = x_offset + block[0] * block_dim
             y = next_tetrominoes_y0 + i * 3 * block_dim + block[1] * block_dim
             pygame.draw.rect(window, tetromino.color, (x, y, block_dim, block_dim))
+
+def draw_held_tetromino(held_tetromino_shape):
+        held_tetromino = Tetromino(held_tetromino_shape)
+        x_offset = held_center_x - ((held_tetromino.max_x - held_tetromino.min_x + 1)*block_dim) / 2
+        y_offset = held_center_y - ((held_tetromino.max_y - held_tetromino.min_y + 1)*block_dim) / 2
+        
+        block_x_min = min(block[0] for block in held_tetromino.blocks)
+        block_y_min = min(block[1] for block in held_tetromino.blocks)
+
+        tetromino_to_show = add_lists([[- block_x_min, - block_y_min]], held_tetromino.blocks)
+
+        for block in tetromino_to_show:
+            x = x_offset + block[0] * block_dim
+            y = y_offset + block[1] * block_dim
+            pygame.draw.rect(window, held_tetromino.color, (x, y, block_dim, block_dim))
+
 
 def check_finished_rows(placed_tetrominoes):
     row_to_clear = list()
@@ -98,8 +118,9 @@ def place_tetromino(tetromino, placed_tetrominos, placed_tetromino_colors, key_t
     
     for item in key_timers:
         key_timers[item]['pressed'] = False
-    
+
     return new_tetromino
+
 
 
 
@@ -112,6 +133,8 @@ def main():
 
     placed_tetrominos = list()
     placed_tetromino_colors = list()
+    held_tetromino_shape = 10 # dummy number to initialize
+    changed = False
 
     key_delay = 300  # Initial delay before continuous movement (in milliseconds)
     key_interval = 20  # Interval for continuous movement (in milliseconds)
@@ -150,6 +173,7 @@ def main():
                     tetromino = place_tetromino(tetromino, placed_tetrominos, placed_tetromino_colors, key_timers, next_tetrominoes)
                     next_tetrominoes.pop(0)
                     next_tetrominoes.append(random_tetromino(next_tetrominoes[-1]))
+                    changed = False
                     
 
                 if event.key == pygame.K_UP:
@@ -162,6 +186,22 @@ def main():
                 if event.key == pygame.K_a:
                     for i in range(2):
                         tetromino.rotate(placed_tetrominos) # Flip the tetromino
+                    
+                if event.key == pygame.K_LSHIFT:
+                    if changed == False:
+                        if isinstance(held_tetromino_shape, str):
+                            tetromino_change_buffer = held_tetromino_shape
+                            held_tetromino_shape = tetromino.shape
+                            tetromino = Tetromino(tetromino_change_buffer)
+                            changed = True
+
+                        else:
+                            held_tetromino_shape = tetromino.shape
+                            tetromino = next_tetrominoes[0]
+                            next_tetrominoes.pop(0)
+                            next_tetrominoes.append(random_tetromino(next_tetrominoes[-1]))
+                            changed = True
+
 
             if event.type == pygame.KEYUP:
                 if event.key in key_timers:
@@ -173,10 +213,10 @@ def main():
                 if tetromino.collision == True:
                      #Place tetromino
                     if tetromino.hard_collision == True:
-                        print(tetromino.hard_collision)
                         tetromino = place_tetromino(tetromino, placed_tetrominos, placed_tetromino_colors, key_timers, next_tetrominoes)
                         next_tetrominoes.pop(0)
                         next_tetrominoes.append(random_tetromino(next_tetrominoes[-1]))
+                        changed = False
 
         for key, value in key_timers.items():
             if value['pressed']:
@@ -192,9 +232,15 @@ def main():
         #clear rows
         placed_tetrominos = clear_and_shift_rows(placed_tetrominos, check_finished_rows(placed_tetrominos))
 
+
+        if len(placed_tetromino_colors)>200:
+            placed_tetromino_colors.pop(0)
+
         draw_grid()
         draw_tetromino(tetromino,placed_tetrominos, placed_tetromino_colors)
         draw_next_tetrominoes(next_tetrominoes)
+        if isinstance(held_tetromino_shape, str):
+            draw_held_tetromino(held_tetromino_shape)
         pygame.display.update()
         clock.tick(60)  # control the frame rate
 

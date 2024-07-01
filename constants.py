@@ -9,9 +9,11 @@ work_transform_x = width / 2 - play_area_width / 2
 work_transform_y = height - 50 - play_area_height
 block_dim = play_area_width / 10
 
-next_tetrominoes_x0 = 595
+next_tetrominoes_x0 = 609
 next_tetrominoes_y0 = 130
 
+held_center_x = 91
+held_center_y = 150
 window = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Tetris")
 background = pygame.transform.scale(pygame.image.load("Assets/bg.png"), (width, height))

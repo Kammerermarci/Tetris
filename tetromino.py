@@ -11,6 +11,7 @@ class Tetromino:
         self.position = add_lists(self.start_position,self.blocks)
         self.min_x = min(block[0] for block in self.position)
         self.max_x = max(block[0] for block in self.position)
+        self.min_y = min(block[1] for block in self.position)
         self.max_y = max(block[1] for block in self.position)
         self.collision = False
         self.hard_collision = False
@@ -108,10 +109,15 @@ class Tetromino:
         
         else: self.position = new_position
 
-        for i in range(len(self.position)):
+        collision_after_rotation = True
+        while collision_after_rotation:
+            collision_after_rotation = False
             for tetromino in placed_tetrominoes:
-                for placed_block in tetromino:
-                    while placed_block == self.position[i]:
+                for block in tetromino:
+                    if block in self.position:
+                        collision_after_rotation = True
                         self.position = add_lists([[0,-1]], self.position)
                         self.pivot_position = add_lists([[0,-1]], self.pivot_position)
-                        print("felmozgatva")
+                        break
+            if collision_after_rotation == False:
+                break
