@@ -38,6 +38,15 @@ def draw_tetromino(tetromino, placed_tetrominos, placed_tetromino_colors):
     for i in range(21):
         pygame.draw.line(window, (200, 200, 200), [work_transform_x, work_transform_y + i * block_dim], [work_transform_x + play_area_width, work_transform_y + i * block_dim], 1)
 
+def draw_shadow_tetromino(shadow_tetromino):
+    for block in shadow_tetromino.position:
+        x = work_transform_x + block[0] * block_dim
+        y = work_transform_y + block[1] * block_dim
+
+        temp_surface = pygame.Surface((block_dim, block_dim), pygame.SRCALPHA)
+        temp_surface.fill((156,156,156, 90))
+        window.blit(temp_surface, (x,y))
+
 def draw_next_tetrominoes(next_tetrominoes):
     for i, tetromino in enumerate(next_tetrominoes):
 
@@ -153,6 +162,12 @@ def main():
     while run:
         current_time = pygame.time.get_ticks()
 
+        shadow_tetromino = Tetromino(tetromino.shape)
+        shadow_tetromino.position = tetromino.position
+
+        while shadow_tetromino.collision == False:
+            shadow_tetromino.move("down", placed_tetrominos)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -237,6 +252,7 @@ def main():
             placed_tetromino_colors.pop(0)
 
         draw_grid()
+        draw_shadow_tetromino(shadow_tetromino)
         draw_tetromino(tetromino,placed_tetrominos, placed_tetromino_colors)
         draw_next_tetrominoes(next_tetrominoes)
         if isinstance(held_tetromino_shape, str):
