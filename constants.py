@@ -17,8 +17,11 @@ held_center_y = 150
 window = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Tetris")
 background = pygame.transform.scale(pygame.image.load("Assets/bg.png"), (width, height))
-row_cleared_sound = pygame.mixer.Sound("Assets/Tetris_row_finished.mp3")
+row_clear_sound = pygame.mixer.Sound("Assets/row_clear.mp3")
+row_clear_sound.set_volume(0.5)
+tetris_row_clear_sound = pygame.mixer.Sound("Assets/tetris_row_clear.mp3")
 background_music = "Assets/Tetris.mp3"
+place_object_sound = pygame.mixer.Sound("Assets/place_object.mp3")
 
 TETROMINOES = {
     'T': [(0, 0), (-1, 0), (1, 0), (0, -1)],

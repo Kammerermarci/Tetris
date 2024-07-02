@@ -89,19 +89,28 @@ def check_finished_rows(placed_tetrominoes):
                 row_to_clear.append(i-1)
     return row_to_clear
 
-def clear_and_shift_rows(placed_tetrominos, rows_to_clear):
+def clear_and_shift_rows(placed_tetrominos, placed_tetromino_colors, rows_to_clear):
     for row in rows_to_clear:
-        # Remove blocks in the current row and shift blocks above it
-        placed_tetrominos = [
-            [
+        new_placed_tetrominos = []
+        new_placed_tetromino_colors = []
+        
+        for i in range(len(placed_tetrominos)):
+            new_tetromino = [
                 [x, y + 1] if y < row else [x, y] 
-                for x, y in tetromino if y != row
+                for x, y in placed_tetrominos[i] if y != row
             ]
-            for tetromino in placed_tetrominos
-        ]
-    if len(rows_to_clear) > 0:
-      row_cleared_sound.play()
-    return placed_tetrominos
+            if new_tetromino:
+                new_placed_tetrominos.append(new_tetromino)
+                new_placed_tetromino_colors.append(placed_tetromino_colors[i])
+
+        placed_tetrominos = new_placed_tetrominos
+        placed_tetromino_colors = new_placed_tetromino_colors
+
+    if len(rows_to_clear) == 4:
+        tetris_row_clear_sound.play()
+    elif len(rows_to_clear) != 0:
+        row_clear_sound.play()
+    return placed_tetrominos, placed_tetromino_colors
 
 def random_tetromino(tetromino):
 
@@ -120,6 +129,7 @@ def random_tetromino(tetromino):
 def place_tetromino(tetromino, placed_tetrominos, placed_tetromino_colors, key_timers, next_tetrominoes):
 
     placed_tetrominos.append(tetromino.position)
+    place_object_sound.play()
     placed_tetromino_colors.append(tetromino.color)
 
     new_tetromino = next_tetrominoes[0]
@@ -245,11 +255,7 @@ def main():
                     value['timer'] = current_time + key_interval
             
         #clear rows
-        placed_tetrominos = clear_and_shift_rows(placed_tetrominos, check_finished_rows(placed_tetrominos))
-
-
-        if len(placed_tetromino_colors)>200:
-            placed_tetromino_colors.pop(0)
+        placed_tetrominos, placed_tetromino_colors = clear_and_shift_rows(placed_tetrominos, placed_tetromino_colors, check_finished_rows(placed_tetrominos))
 
         draw_grid()
         draw_shadow_tetromino(shadow_tetromino)
@@ -263,5 +269,5 @@ def main():
     pygame.quit()
 
 if __name__ == "__main__":
-    music()
+    #music()
     main()
