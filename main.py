@@ -14,7 +14,7 @@ pygame.init()
 
 def music():
     pygame.mixer.music.load(background_music)
-    pygame.mixer.music.set_volume(0.45)
+    pygame.mixer.music.set_volume(0.25)
     pygame.mixer.music.play(loops=-1)
 
 def draw_grid():
@@ -297,5 +297,5 @@ def main():
     pygame.quit()
 
 if __name__ == "__main__":
-    #music()
+    music()
     main()
