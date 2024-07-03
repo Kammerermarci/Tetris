@@ -6,15 +6,20 @@ class Tetromino:
         self.shape = shape
         self.blocks = TETROMINOES[shape]
         self.color = COLORS[shape]
-        self.start_position = [[5,0]] # start in the middle of the top of the play area
+        self.start_position = [[4,0]] # start in the middle of the top of the play area
         self.pivot_position = add_lists(self.start_position,PIVOT_POINTS[shape])
         self.position = add_lists(self.start_position,self.blocks)
         self.min_x = min(block[0] for block in self.position)
         self.max_x = max(block[0] for block in self.position)
         self.min_y = min(block[1] for block in self.position)
         self.max_y = max(block[1] for block in self.position)
+        self.max_y_start = max(block[1] for block in self.start_position)
         self.collision = False
         self.hard_collision = False
+        while self.max_y_start > -1:
+            self.position = add_lists([[0,-1]], self.position)
+            self.pivot_position = add_lists([[0,-1]], self.pivot_position)
+            self.max_y_start = min(block[1] for block in self.position)
 
     def move(self, direction, placed_tetrominos):
         self.min_x = min(block[0] for block in self.position)
@@ -27,7 +32,8 @@ class Tetromino:
         if direction == "left":
             if self.min_x>0:
                 new_position = add_lists([[-1,0]],self.position)
-                new_pivot_position =  add_lists([[-1,0]],self.pivot_position)
+                new_pivot_position = add_lists([[-1,0]],self.pivot_position)
+                movement_tick_sound.play()
             else:
                 new_position = self.position
                 new_pivot_position = self.pivot_position
@@ -36,6 +42,7 @@ class Tetromino:
             if self.max_x<9:
                 new_position = add_lists([[1,0]],self.position)
                 new_pivot_position =  add_lists([[1,0]],self.pivot_position)
+                movement_tick_sound.play()
             else:
                 new_position = self.position
                 new_pivot_position = self.pivot_position
@@ -43,6 +50,10 @@ class Tetromino:
         elif direction == "down":
             new_position = add_lists([[0,1]],self.position)
             new_pivot_position =  add_lists([[0,1]],self.pivot_position)
+
+        elif direction == "up":
+            new_position = add_lists([[0,-1]],self.position)
+            new_pivot_position =  add_lists([[0,-1]],self.pivot_position)
 
 
         if max(block[1] for block in new_position) <= 19:
@@ -91,7 +102,7 @@ class Tetromino:
                     return True
         return False
     
-    def rotate(self, placed_tetrominoes):
+    def rotate(self, placed_tetrominos):
         new_blocks = [(-y, x) for x, y in substract_lists(self.pivot_position,self.position)]  # 90 degree rotation around the pivot point
         new_position = add_lists(self.pivot_position,new_blocks)
         min_x = min(block[0] for block in new_position)
@@ -112,10 +123,11 @@ class Tetromino:
         collision_after_rotation = True
         while collision_after_rotation:
             collision_after_rotation = False
-            for tetromino in placed_tetrominoes:
+            for tetromino in placed_tetrominos:
                 for block in tetromino:
                     if block in self.position:
                         collision_after_rotation = True
+                        self.move("up",placed_tetrominos)
                         self.position = add_lists([[0,-1]], self.position)
                         self.pivot_position = add_lists([[0,-1]], self.pivot_position)
                         break
